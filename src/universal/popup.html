@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Leak AI Assistant</title>
+    <link rel="stylesheet" href="ai_assistant.css">
+</head>
+<body class="leak-ai-popup">
+    <div class="leak-ai-menu active">
+        <div class="leak-ai-header">
+            <span>Leak AI Assistant</span>
+        </div>
+        <div class="leak-ai-body">
+            <div class="leak-ai-field">
+                <label for="leak-ai-token">API Token</label>
+                <input type="password" id="leak-ai-token" class="leak-ai-input" placeholder="Paste your Tye token...">
+            </div>
+            <div class="leak-ai-field">
+                <label for="leak-ai-prompt">Your Question</label>
+                <textarea id="leak-ai-prompt" class="leak-ai-input leak-ai-textarea" placeholder="How can I help you today?"></textarea>
+            </div>
+            <button class="leak-ai-send">Ask AI</button>
+            <div class="leak-ai-loading">
+                <div class="leak-ai-spinner"></div>
+                <span>Consulting Tye AI...</span>
+            </div>
+            <div class="leak-ai-response"></div>
+            <div class="leak-ai-footer">
+                Powered by Tye
+            </div>
+        </div>
+    </div>
+    <script src="ai_assistant.js"></script>
+</body>
+</html>

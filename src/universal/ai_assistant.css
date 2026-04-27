@@ -1,0 +1,155 @@
+/*///////////////////////////////////////////*/
+/* THIS CODE IS PART OF THE LEAKHW PROJECT */
+/*    © LeakHW 2026 - GNU GPLv3 License    */
+/*                                         */
+/* Please do NOT claim this code as solely */
+/* your own code. All code here is part of */
+/*     the open-source LeakHW project.     */
+/*                                         */
+/*   ai_assistant.css • Universal AI       */
+/*        Universal AI Assistant CSS       */
+/*///////////////////////////////////////////*/
+
+body.leak-ai-popup {
+    margin: 0;
+    padding: 0;
+    width: 320px;
+    background: #ffffff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.leak-ai-menu {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.leak-ai-header {
+    background: #00d1b2;
+    color: white;
+    padding: 16px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
+.leak-ai-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.leak-ai-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.leak-ai-field label {
+    font-size: 12px;
+    color: #555;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.leak-ai-input {
+    padding: 10px 14px;
+    border: 1.5px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    background: #fcfcfc;
+    width: -webkit-fill-available;
+}
+
+.leak-ai-input:focus {
+    border-color: #00d1b2;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 209, 178, 0.1);
+}
+
+.leak-ai-textarea {
+    resize: none;
+    height: 100px;
+    line-height: 1.5;
+}
+
+.leak-ai-send {
+    background: #00d1b2;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.leak-ai-send:hover {
+    background: #00b89c;
+    box-shadow: 0 4px 12px rgba(0, 209, 178, 0.2);
+}
+
+.leak-ai-loading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+    margin-top: 8px;
+}
+
+.leak-ai-loading.active {
+    display: flex;
+}
+
+.leak-ai-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #eee;
+    border-top: 2px solid #00d1b2;
+    border-radius: 50%;
+    animation: leakSpin 0.8s linear infinite;
+}
+
+@keyframes leakSpin {
+    to { transform: rotate(360deg); }
+}
+
+.leak-ai-response {
+    margin-top: 12px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 10px;
+    font-size: 14px;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #edf2f7;
+    white-space: pre-wrap;
+    display: none;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+.leak-ai-response.active {
+    display: block;
+}
+
+.leak-ai-footer {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #a0aec0;
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
