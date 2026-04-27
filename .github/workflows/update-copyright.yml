@@ -1,0 +1,36 @@
+name: Update Copyright Year
+
+on:
+  schedule:
+    - cron: "0 0 1 1 *" # Runs yearly on Jan 1st
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-year:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set current year
+        id: year
+        run: echo "YEAR=$(date +'%Y')" >> $GITHUB_OUTPUT
+
+      - name: Update copyright years
+        run: |
+          CURRENT_YEAR=${{ steps.year.outputs.YEAR }}
+
+          # Find and replace © LeakHW XXXX with current year
+          grep -rl "© LeakHW [0-9]\{4\}" . | while read file; do
+            sed -i -E "s/© LeakHW [0-9]{4}/© LeakHW ${CURRENT_YEAR}/g" "$file"
+          done
+
+      - name: Commit changes
+        run: |
+          git config user.name "LeakHW Auto-Maintain"
+          git config user.email "leakhw-auto@github.com"
+
+          git add .
+          git diff --cached --quiet || git commit -m "Update copyright year to $(date +'%Y')"
+          git push

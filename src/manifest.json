@@ -1,0 +1,118 @@
+{
+  "manifest_version": 3,
+  "name": "Leak",
+  "version": "1.0",
+  "description": "Leak homework helper",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://app.senecalearning.com/login/*"
+      ],
+      "js": [
+        "seneca/auth/index.js",
+        "seneca/univsersal.js"
+      ],
+      "css": [
+        "seneca/universal.css",
+        "seneca/auth/index.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://app.senecalearning.com/dashboard/*",
+        "*://app.senecalearning.com/dashboard"
+      ],
+      "js": [
+        "seneca/app/index.js",
+        "seneca/universal.js"
+      ],
+      "css": [
+        "seneca/universal.css",
+        "seneca/app/index.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://maths.sparx-learning.com/*"
+      ],
+      "js": [
+        "sparx/maths/index.js",
+        "sparx/universal.js"
+      ],
+      "css": [
+        "sparx/universal.css",
+        "sparx/maths/index.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://reader.sparx-learning.com/*"
+      ],
+      "js": [
+        "sparx/reader/index.js",
+        "sparx/universal.js"
+      ],
+      "css": [
+        "sparx/universal.css",
+        "sparx/reader/index.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://science.sparx-learning.com/*"
+      ],
+      "js": [
+        "sparx/science/index.js",
+        "sparx/universal.js"
+      ],
+      "css": [
+        "sparx/universal.css",
+        "sparx/science/index.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://auth.sparx-learning.com/*"
+      ],
+      "js": [
+        "sparx/auth/index.js",
+        "sparx/universal.js"
+      ],
+      "css": [
+        "sparx/universal.css",
+        "sparx/auth/index.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://maths.sparx-learning.com/*",
+        "*://science.sparx-learning.com/*",
+        "*://reader.sparx-learning.com/*",
+        "*://auth.sparx-learning.com/*"
+      ],
+      "js": [
+        "sparx/universal.js"
+      ],
+      "css": [
+        "sparx/universal.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [],
+  "host_permissions": [
+    "*://*.senecalearning.com/*",
+    "*://*.sparx-learning.com/*"
+  ]
+}
