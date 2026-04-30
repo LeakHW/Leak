@@ -19,14 +19,13 @@
 
     const tools = {};
     const enabledTools = {};
+    const menuObservers = new Map(); // Store observers by selector
 
     const LOG_STYLE = 'color: #3182ce; font-weight: bold;';
     const PREFIX_STYLE = 'background: #3182ce; color: white; padding: 2px 5px; border-radius: 3px; font-weight: bold;';
 
     window.Leak = {
-        /**
-         * Centralized logging for Leak.
-         */
+        // ... (logging and logo functions)
         log: (msg, ...args) => {
             console.log(`%cLEAK%c ${msg}`, PREFIX_STYLE, LOG_STYLE, ...args);
         },
@@ -76,15 +75,15 @@
          * @param {function} toggleFn - Function to enable/disable the tool (passed a boolean).
          */
         registerTool: (id, toggleFn) => {
+            if (tools[id] === toggleFn) return;
+            
             window.Leak.debug(`Registering tool implementation: ${id}`);
             tools[id] = toggleFn;
-            // If already enabled by a platform script, check storage and init
+            
             if (enabledTools[id]) {
                 const hostname = window.location.hostname;
                 const storageKey = `leak_tool_${id}_enabled_${hostname}`;
                 chrome.storage.local.get([storageKey], (result) => {
-                    // Default to false if not set, unless the platform config says otherwise?
-                    // Let's default to false for now as requested (toggleable from UI)
                     const isEnabled = result[storageKey] || false;
                     toggleFn(isEnabled);
                 });
@@ -98,9 +97,11 @@
          * @param {object} config - Tool configuration (label, description, etc).
          */
         enableTool: (id, config = {}) => {
+            if (enabledTools[id] && JSON.stringify(enabledTools[id]) === JSON.stringify(config)) return;
+
             window.Leak.debug(`Enabling tool ${id}`, config);
             enabledTools[id] = config;
-            // If already registered, check storage and init
+            
             if (tools[id]) {
                 const hostname = window.location.hostname;
                 const storageKey = `leak_tool_${id}_enabled_${hostname}`;
@@ -145,20 +146,20 @@
          * @param {object} options - Injection options.
          */
         registerMenuInjection: (options) => {
-            console.log(`Leak: Registering menu injection for ${options.selector}`);
             const { selector, targetText, iconHtml, label, onClick, separatorSelector } = options;
+            
+            // Disconnect old observer if it exists for this selector
+            if (menuObservers.has(selector)) {
+                menuObservers.get(selector).disconnect();
+            }
 
             const inject = () => {
                 const menuList = document.querySelector(selector);
                 if (!menuList) return;
-                
-                // Check if already injected
                 if (menuList.querySelector('.leak-injected-item')) return;
 
-                // Find the target button/item by text
                 const items = Array.from(menuList.querySelectorAll('button, a, [role="menuitem"], span, div'));
                 const targetItem = items.find(el => {
-                    // Only match if the element has direct text content to avoid matching parents
                     const hasText = Array.from(el.childNodes).some(node => 
                         node.nodeType === Node.TEXT_NODE && 
                         node.textContent.toLowerCase().includes(targetText.toLowerCase())
@@ -166,26 +167,20 @@
                     return hasText;
                 });
 
-                // Find the actual button element (it might be the target itself or a parent)
                 const targetButton = targetItem ? (targetItem.closest('button, a, [role="menuitem"]') || targetItem) : null;
                 
                 if (targetButton) {
-                    // Create Leak Button
                     const leakButton = document.createElement('button');
                     leakButton.type = 'button';
-                    // Replicate classes but remove specific ones that might cause issues
                     leakButton.className = targetButton.className.split(' ').filter(c => !c.includes('active')).join(' ') + ' leak-injected-item';
                     leakButton.innerHTML = iconHtml || `<span>${label}</span>`;
                     leakButton.style.cursor = 'pointer';
 
-                    // Determine where to insert
-                    // If the button is wrapped in a div (common in Seneca/React), wrap ours too
                     const wrapper = targetButton.parentElement;
                     const isDivWrapper = wrapper && wrapper.tagName === 'DIV' && wrapper !== menuList;
 
                     if (isDivWrapper) {
                         const newWrapper = document.createElement('div');
-                        // Handle Seneca specifically if needed, otherwise copy wrapper class
                         newWrapper.className = wrapper.className + ' leak-injected-wrapper';
                         newWrapper.style.display = 'block';
                         newWrapper.style.width = '100%';
@@ -195,7 +190,6 @@
                         targetButton.parentNode.insertBefore(leakButton, targetButton.nextSibling);
                     }
 
-                    // Handle separator if requested
                     if (separatorSelector) {
                         const existingDivider = menuList.querySelector(separatorSelector);
                         const separator = document.createElement('div');
@@ -216,12 +210,10 @@
                 }
             };
 
-            const observer = new MutationObserver((mutations) => {
-                inject();
-            });
-
+            const observer = new MutationObserver(() => inject());
             observer.observe(document.body, { childList: true, subtree: true });
-            inject(); // Initial check
+            menuObservers.set(selector, observer);
+            inject();
         }
     };
 

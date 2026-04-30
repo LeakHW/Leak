@@ -17,20 +17,21 @@
      */
     
     if (window.Leak) {
-        window.Leak.registerTool('math_helper', async (isEnabled) => {
-            let helper = document.getElementById('leak-math-helper');
+        window.Leak.registerTool('example', async (isEnabled) => {
+            let helper = document.getElementById('leak-example-tool');
             
             if (isEnabled) {
                 if (!helper) {
                     try {
-                        const response = await fetch(chrome.runtime.getURL('universal/tools/math_helper/math_helper.html'));
+                        const response = await fetch(chrome.runtime.getURL('universal/tools/example/example.html'));
                         const html = await response.text();
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = html;
                         helper = tempDiv.firstElementChild;
+                        helper.id = 'leak-example-tool';
                         document.body.appendChild(helper);
                     } catch (error) {
-                        window.Leak.error('Failed to load Math Helper HTML', error);
+                        window.Leak.error('Failed to load example HTML', error);
                         return;
                     }
                 } else {

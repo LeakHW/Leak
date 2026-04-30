@@ -17,11 +17,34 @@
      */
     
     if (window.Leak) {
+        let observer = null;
+        let clickHandler = null;
+        let lastLog = "";
+        let pendingAnswer = null;
+
         window.Leak.registerTool('data_collector', (isEnabled) => {
-            if (!isEnabled) return;
+            // Cleanup existing
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
+            if (clickHandler) {
+                document.body.removeEventListener('click', clickHandler, { capture: true });
+                clickHandler = null;
+            }
+
+            if (!isEnabled) {
+                window.Leak.debug('Data Collector disabled.');
+                return;
+            }
 
             const clean = t => t.replace(/(Zoom|Watch video|Answer|Summary)/gi, "").replace(/\n{2,}/g, "\n").trim();
+            // ... (rest of helper functions)
             
+            // Reset state
+            lastLog = "";
+            pendingAnswer = null;
+
             const logData = (capturedAnswer = null) => {
                 chrome.storage.local.get(['leak_setting_collect_data', 'leak_setting_collect_data_verbose'], (result) => {
                     const isCollectEnabled = result['leak_setting_collect_data'] !== undefined ? result['leak_setting_collect_data'] : true;
@@ -34,11 +57,10 @@
                     const calcMatch = bodyText.match(/Calculator (not allowed|allowed)/i);
                     const calc = calcMatch ? calcMatch[0] : null;
                     
-                    // Find question text - usually the first element with a '?' that isn't a known noise word
                     const qElement = [...document.querySelectorAll('span, div, p')].find(e => 
                         e.innerText && 
                         e.innerText.includes('?') && 
-                        e.innerText.length < 500 && // Avoid long texts
+                        e.innerText.length < 500 &&
                         !/Bookwork code|Calculator|Summary|Answer|Watch video/i.test(e.innerText)
                     );
                     const q = qElement ? qElement.innerText : "";
@@ -66,25 +88,61 @@
 
             // Capture logic for data collector (similar to bookwork helper)
             const captureCurrentAnswer = () => {
-                const inputs = [...document.querySelectorAll('input._TextField_kz9c2_359, input[type="text"], input.ka-input-text')];
-                const inputVals = inputs.map(i => i.value).filter(v => v !== "");
-                
-                const selected = [...document.querySelectorAll('[class*="Selected"], [aria-pressed="true"], [data-selected="true"]')];
-                const selectedVals = selected.map(s => clean(s.textContent)).filter(v => v && v.length > 0 && !/Zoom|Watch|Answer|Summary/i.test(v));
-                
-                const slots = [...document.querySelectorAll('._InlineSlot_kz9c2_931, ._CardSlot_kz9c2_958')];
-                const slotVals = slots.filter(s => !s.innerText.includes('-')).map(s => clean(s.textContent));
+                const parts = {
+                    inputs: [],
+                    options: [],
+                    slots: []
+                };
 
-                return [...new Set([...inputVals, ...selectedVals, ...slotVals])].join(', ');
+                // 1. Capture all text/numeric inputs
+                const inputElements = document.querySelectorAll('input._TextField_kz9c2_359, input[type="text"], input[type="number"], input.ka-input-text');
+                inputElements.forEach(input => {
+                    if (input.value && input.value.trim() !== "") {
+                        parts.inputs.push(input.value.trim());
+                    }
+                });
+
+                // 2. Capture selected options (Multiple choice, etc.)
+                const allOptions = document.querySelectorAll('._Option_kz9c2_66, [role="button"], button[class*="_Option_"]');
+                allOptions.forEach(opt => {
+                    const isSelected = opt.classList.contains('_Selected_kz9c2_152') || 
+                                     opt.getAttribute('aria-pressed') === 'true' ||
+                                     opt.getAttribute('data-selected') === 'true' ||
+                                     opt.className.includes('Selected');
+                    
+                    if (isSelected) {
+                        let text = clean(opt.innerText || opt.textContent);
+                        const img = opt.querySelector('img');
+                        if (!text && img) {
+                            text = `[Image: ${img.src.split('/').pop()}]`;
+                        }
+                        if (text) parts.options.push(text);
+                    }
+                });
+
+                // 3. Capture filled slots (Drag & Drop)
+                const allSlots = document.querySelectorAll('._InlineSlot_kz9c2_931, ._CardSlot_kz9c2_958');
+                allSlots.forEach(slot => {
+                    const isEmpty = slot.querySelector('._CardContentEmpty_kz9c2_1062') || 
+                                   slot.innerText.trim() === '-' ||
+                                   slot.classList.contains('_CardContentEmpty_kz9c2_1062');
+                    
+                    if (!isEmpty) {
+                        let text = clean(slot.innerText || slot.textContent);
+                        const img = slot.querySelector('img');
+                        if ((!text || text === '-') && img) {
+                            text = `[Image: ${img.src.split('/').pop()}]`;
+                        }
+                        if (text && text !== '-') parts.slots.push(text);
+                    }
+                });
+
+                return [...new Set([...parts.inputs, ...parts.options, ...parts.slots])].filter(v => v && v.length > 0).join(', ');
             };
 
-            // Run on initial load and when the DOM changes
-            let lastLog = "";
-            let pendingAnswer = null;
-
-            const observer = new MutationObserver(() => {
-                const bookElement = [...document.querySelectorAll("*")].map(e => e.innerText).find(t => /^Bookwork code:\s*\S+/m.test(t));
-                const bookMatch = bookElement ? bookElement.match(/Bookwork code:\s*(\S+)/) : null;
+            observer = new MutationObserver(() => {
+                const bodyText = document.body.innerText;
+                const bookMatch = bodyText.match(/Bookwork code:\s*(\S+)/);
                 const bookwork = bookMatch ? bookMatch[1] : null;
 
                 if (bookwork && bookwork !== lastLog) {
@@ -92,7 +150,6 @@
                     logData();
                 }
 
-                // If correct popover appears, log with answer
                 const isCorrect = document.querySelector('[class*="_Correct_"]');
                 if (isCorrect && pendingAnswer) {
                     logData(pendingAnswer);
@@ -100,14 +157,14 @@
                 }
             });
 
-            // Intercept submit clicks
-            document.body.addEventListener('click', (e) => {
+            clickHandler = (e) => {
                 const submitBtn = e.target.closest('button._ButtonPrimary_f5gga_185');
                 if (submitBtn && submitBtn.textContent.toLowerCase().includes('submit')) {
                     pendingAnswer = captureCurrentAnswer();
                 }
-            }, { capture: true });
+            };
 
+            document.body.addEventListener('click', clickHandler, { capture: true });
             observer.observe(document.body, { childList: true, subtree: true });
             logData();
         });

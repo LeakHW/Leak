@@ -17,14 +17,35 @@
      */
     
     if (window.Leak) {
-        window.Leak.registerTool('bookwork_helper', (isEnabled) => {
-            if (!isEnabled) return;
+        let observer = null;
+        let clickHandler = null;
+        let sessionData = {};
+        let currentBookwork = null;
+        let pendingSubmission = null;
 
-            const sessionData = {}; // Stores { bookwork: { question, answer, images } }
-            let currentBookwork = null;
-            let pendingSubmission = null;
+        window.Leak.registerTool('bookwork_helper', (isEnabled) => {
+            // Cleanup existing if any
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
+            if (clickHandler) {
+                document.body.removeEventListener('click', clickHandler, { capture: true });
+                clickHandler = null;
+            }
+
+            if (!isEnabled) {
+                window.Leak.debug('Bookwork Helper disabled.');
+                return;
+            }
 
             const clean = t => t.replace(/(Zoom|Watch video|Answer|Summary)/gi, "").replace(/\n{2,}/g, "\n").trim();
+            // ... (rest of helper functions remain inside or outside)
+            
+            // Re-initialize state
+            sessionData = {};
+            currentBookwork = null;
+            pendingSubmission = null;
 
             const getQuestionData = () => {
                 const bodyText = document.body.innerText;
@@ -56,57 +77,95 @@
                     return null;
                 }
 
-                window.Leak.debug('Starting answer capture...');
+                window.Leak.debug('Starting exhaustive answer capture...');
 
-                // 1. Text Inputs (including readonly ones updated by keypads)
-                // Refined based on example-answers.txt classes
-                const inputs = [...document.querySelectorAll('input._TextField_kz9c2_359, input[type="text"], input[type="number"], input.ka-input-text')];
-                const inputAnswers = inputs.map(i => ({
-                    ref: i.getAttribute('data-ref') || i.name || i.id || 'unknown',
-                    value: i.value
-                })).filter(i => i.value !== "");
+                const parts = {
+                    inputs: [],
+                    options: [],
+                    slots: []
+                };
 
-                // 2. Selected choices / Options
-                const options = [...document.querySelectorAll('._Option_kz9c2_66, ._Choice_kz9c2_73, div[role="button"], button')];
-                const selectedOptions = options.filter(opt => {
+                // 1. Capture all text/numeric inputs
+                const inputElements = document.querySelectorAll('input._TextField_kz9c2_359, input[type="text"], input[type="number"], input.ka-input-text');
+                inputElements.forEach(input => {
+                    if (input.value && input.value.trim() !== "") {
+                        parts.inputs.push({
+                            ref: input.getAttribute('data-ref') || input.name || 'input',
+                            value: input.value.trim()
+                        });
+                    }
+                });
+
+                // 2. Capture selected options (Multiple choice, etc.)
+                // Sparx often uses a specific class for selected options. 
+                // Based on common patterns, it's likely [class*="Selected"] or [aria-pressed="true"]
+                const allOptions = document.querySelectorAll('._Option_kz9c2_66, [role="button"], button[class*="_Option_"]');
+                allOptions.forEach(opt => {
                     const isSelected = opt.classList.contains('_Selected_kz9c2_152') || 
-                                     opt.querySelector('._Selected_kz9c2_152') ||
                                      opt.getAttribute('aria-pressed') === 'true' ||
-                                     opt.getAttribute('data-selected') === 'true';
-                    return isSelected;
-                }).map(opt => ({
-                    ref: opt.getAttribute('data-ref') || 'option',
-                    value: clean(opt.textContent)
-                }));
+                                     opt.getAttribute('data-selected') === 'true' ||
+                                     opt.className.includes('Selected');
+                    
+                    if (isSelected) {
+                        // Check for text content
+                        let text = opt.innerText || opt.textContent;
+                        // Clean up text (remove "Zoom" etc.)
+                        text = clean(text);
+                        
+                        // Check for images if no text
+                        const img = opt.querySelector('img');
+                        if (!text && img) {
+                            text = `[Image: ${img.src.split('/').pop()}]`;
+                        }
 
-                // 3. Drag and Drop Slots / Tiles (Refined)
-                const slots = [...document.querySelectorAll('._InlineSlot_kz9c2_931, ._CardSlot_kz9c2_958')];
-                const slotAnswers = slots.map(slot => {
-                    const isEmpty = slot.classList.contains('_CardContentEmpty_kz9c2_1062') || 
-                                   slot.querySelector('._CardContentEmpty_kz9c2_1062') ||
-                                   slot.textContent.trim() === '-';
-                    return {
-                        ref: slot.getAttribute('data-ref') || slot.getAttribute('data-slot') || 'slot',
-                        value: isEmpty ? null : clean(slot.textContent),
-                        isEmpty
-                    };
-                }).filter(s => !s.isEmpty);
+                        if (text) {
+                            parts.options.push({
+                                ref: opt.getAttribute('data-ref') || 'option',
+                                value: text
+                            });
+                        }
+                    }
+                });
 
-                // Combine and format
-                const allParts = [
-                    ...inputAnswers.map(a => a.value),
-                    ...selectedOptions.map(a => a.value),
-                    ...slotAnswers.map(a => a.value)
+                // 3. Capture filled slots (Drag & Drop)
+                const allSlots = document.querySelectorAll('._InlineSlot_kz9c2_931, ._CardSlot_kz9c2_958');
+                allSlots.forEach(slot => {
+                    const isEmpty = slot.querySelector('._CardContentEmpty_kz9c2_1062') || 
+                                   slot.innerText.trim() === '-' ||
+                                   slot.classList.contains('_CardContentEmpty_kz9c2_1062');
+                    
+                    if (!isEmpty) {
+                        let text = slot.innerText || slot.textContent;
+                        text = clean(text);
+                        
+                        const img = slot.querySelector('img');
+                        if ((!text || text === '-') && img) {
+                            text = `[Image: ${img.src.split('/').pop()}]`;
+                        }
+
+                        if (text && text !== '-') {
+                            parts.slots.push({
+                                ref: slot.getAttribute('data-ref') || slot.getAttribute('data-slot') || 'slot',
+                                value: text
+                            });
+                        }
+                    }
+                });
+
+                // Combine all unique values into a final answer string
+                const allValues = [
+                    ...parts.inputs.map(p => p.value),
+                    ...parts.options.map(p => p.value),
+                    ...parts.slots.map(p => p.value)
                 ];
 
-                const finalAnswer = [...new Set(allParts)].filter(a => a && a.length > 0).join(', ');
+                // Remove duplicates and join
+                const finalAnswer = [...new Set(allValues)].filter(v => v && v.length > 0).join(', ');
                 
                 chrome.storage.local.get(['leak_setting_collect_data_verbose'], (result) => {
                     if (result['leak_setting_collect_data_verbose']) {
-                        window.Leak.log(`Detailed Capture [${qData.bookwork}]:`, {
-                            inputs: inputAnswers,
-                            options: selectedOptions,
-                            slots: slotAnswers,
+                        window.Leak.log(`Exhaustive Capture [${qData.bookwork}]:`, {
+                            parts,
                             final: finalAnswer
                         });
                     } else {
@@ -118,11 +177,7 @@
                     return {
                         ...qData,
                         answer: finalAnswer,
-                        parts: {
-                            inputs: inputAnswers,
-                            options: selectedOptions,
-                            slots: slotAnswers
-                        },
+                        parts: parts,
                         timestamp: new Date().toISOString()
                     };
                 }
@@ -144,7 +199,7 @@
             };
 
             // Monitor for changes
-            const observer = new MutationObserver(() => {
+            observer = new MutationObserver(() => {
                 // Check for new bookwork
                 const qData = getQuestionData();
                 if (qData && qData.bookwork !== currentBookwork) {
@@ -153,7 +208,7 @@
                     pendingSubmission = null;
                 }
 
-                // Check for result popovers (Refined with dynamic class support)
+                // Check for result popovers
                 const correctResult = document.querySelector('[class*="_Correct_"]');
                 const incorrectResult = document.querySelector('[class*="_Incorrect_"]');
 
@@ -171,21 +226,9 @@
                 }
             });
 
-            // Listen for Submit button click using CAPTURE phase to bypass Sparx stopPropagation
-            document.body.addEventListener('click', (e) => {
-                // Find the submit button using the class provided by user
+            // Listen for Submit button click
+            clickHandler = (e) => {
                 const submitBtn = e.target.closest('button._ButtonPrimary_f5gga_185');
-                
-                // Debug log every click on a button to help identify if we're hitting the right one
-                if (e.target.closest('button')) {
-                    const btn = e.target.closest('button');
-                    window.Leak.debug('Click detected on button', {
-                        text: btn.textContent,
-                        classes: btn.className,
-                        isSubmit: !!submitBtn
-                    });
-                }
-
                 if (submitBtn && submitBtn.textContent.toLowerCase().includes('submit')) {
                     pendingSubmission = captureAnswer();
                     if (pendingSubmission) {
@@ -194,8 +237,9 @@
                         window.Leak.warn('Submit clicked but no answer could be captured.');
                     }
                 }
-            }, { capture: true });
+            };
 
+            document.body.addEventListener('click', clickHandler, { capture: true });
             observer.observe(document.body, { childList: true, subtree: true });
             
             // Initial check
