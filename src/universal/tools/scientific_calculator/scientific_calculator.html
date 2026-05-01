@@ -1,0 +1,62 @@
+<div class="leak-calc-container" id="leak-scientific-calculator">
+    <div class="leak-calc-header">
+        <div class="leak-calc-title">
+            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="calculator" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" style="width: 14px; height: 14px;">
+                <path fill="currentColor" d="M336 0H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48zM96 64h192v64H96V64zm32 384H64v-64h64v64zm0-96H64v-64h64v64zm0-96H64v-64h64v64zm96 192h-64v-64h64v64zm0-96h-64v-64h64v64zm0-96h-64v-64h64v64zm96 192h-64v-64h64v64zm0-96h-64v-64h64v64zm0-96h-64v-64h64v64z"></path>
+            </svg>
+            <span>Scientific Calculator</span>
+        </div>
+        <button class="leak-calc-close">&times;</button>
+    </div>
+    
+    <div class="leak-calc-display">
+        <div class="leak-calc-history" id="leak-calc-history"></div>
+        <div class="leak-calc-current" id="leak-calc-current">0</div>
+    </div>
+    
+    <div class="leak-calc-buttons">
+        <!-- Scientific Row 1 -->
+        <button class="leak-calc-btn sci" data-func="sin">sin</button>
+        <button class="leak-calc-btn sci" data-func="cos">cos</button>
+        <button class="leak-calc-btn sci" data-func="tan">tan</button>
+        <button class="leak-calc-btn sci" data-func="log">log</button>
+        <button class="leak-calc-btn sci" data-func="ln">ln</button>
+        
+        <!-- Scientific Row 2 -->
+        <button class="leak-calc-btn sci" data-func="pow">xʸ</button>
+        <button class="leak-calc-btn sci" data-func="sqrt">√</button>
+        <button class="leak-calc-btn sci" data-func="pi">π</button>
+        <button class="leak-calc-btn sci" data-func="e">e</button>
+        <button class="leak-calc-btn sci" data-func="fact">n!</button>
+
+        <!-- Standard Buttons -->
+        <button class="leak-calc-btn clear" data-func="clear">AC</button>
+        <button class="leak-calc-btn clear" data-func="delete">DEL</button>
+        <button class="leak-calc-btn op" data-op="(">(</button>
+        <button class="leak-calc-btn op" data-op=")">)</button>
+        <button class="leak-calc-btn op" data-op="/">÷</button>
+
+        <button class="leak-calc-btn num" data-num="7">7</button>
+        <button class="leak-calc-btn num" data-num="8">8</button>
+        <button class="leak-calc-btn num" data-num="9">9</button>
+        <button class="leak-calc-btn op" data-op="*">×</button>
+        <button class="leak-calc-btn sci" data-func="abs">|x|</button>
+
+        <button class="leak-calc-btn num" data-num="4">4</button>
+        <button class="leak-calc-btn num" data-num="5">5</button>
+        <button class="leak-calc-btn num" data-num="6">6</button>
+        <button class="leak-calc-btn op" data-op="-">-</button>
+        <button class="leak-calc-btn sci" data-func="exp">exp</button>
+
+        <button class="leak-calc-btn num" data-num="1">1</button>
+        <button class="leak-calc-btn num" data-num="2">2</button>
+        <button class="leak-calc-btn num" data-num="3">3</button>
+        <button class="leak-calc-btn op" data-op="+">+</button>
+        <button class="leak-calc-btn sci" data-func="deg">Deg</button>
+
+        <button class="leak-calc-btn num" data-num="0">0</button>
+        <button class="leak-calc-btn num" data-num=".">.</button>
+        <button class="leak-calc-btn equals" data-func="equals" style="grid-column: span 2;">=</button>
+        <button class="leak-calc-btn sci" data-func="ans">Ans</button>
+    </div>
+</div>

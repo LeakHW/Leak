@@ -126,13 +126,15 @@
         "universal/tools/data_collector/data_collector.js",
         "universal/tools/bookwork_helper/bookwork_helper.js",
         "universal/tools/dev_info/dev_info.js",
-        "universal/tools/text_selector/text_selector.js"
+        "universal/tools/text_selector/text_selector.js",
+        "universal/tools/scientific_calculator/scientific_calculator.js"
       ],
       "css": [
         "universal/tools/leak_menu/leak_menu.css",
         "universal/tools/chatbot/chatbot.css",
         "universal/tools/example/example.css",
-        "universal/tools/dev_info/dev_info.css"
+        "universal/tools/dev_info/dev_info.css",
+        "universal/tools/scientific_calculator/scientific_calculator.css"
       ],
       "run_at": "document_idle"
     }
@@ -142,7 +144,8 @@
       "resources": [
         "universal/tools/leak_menu/leak_menu.html",
         "universal/tools/chatbot/chatbot.html",
-        "universal/tools/example/example.html"
+        "universal/tools/example/example.html",
+        "universal/tools/scientific_calculator/scientific_calculator.html"
       ],
       "matches": ["<all_urls>"]
     }

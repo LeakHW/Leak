@@ -1,0 +1,148 @@
+.leak-calc-container {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 9999995;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    user-select: none;
+}
+
+.leak-calc-container.active {
+    display: flex;
+}
+
+.leak-calc-header {
+    background: #f8fafc;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #edf2f7;
+    cursor: move;
+}
+
+.leak-calc-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a5568;
+}
+
+.leak-calc-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.leak-calc-close:hover {
+    color: #e53e3e;
+}
+
+.leak-calc-display {
+    background: #1a202c;
+    padding: 20px;
+    text-align: right;
+    color: #ffffff;
+}
+
+.leak-calc-history {
+    font-size: 13px;
+    color: #a0aec0;
+    min-height: 1.2em;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leak-calc-current {
+    font-size: 32px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.leak-calc-buttons {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    background: #ffffff;
+}
+
+.leak-calc-btn {
+    border: none;
+    border-radius: 8px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leak-calc-btn:active {
+    transform: scale(0.95);
+}
+
+.leak-calc-btn.num {
+    background: #f1f5f9;
+    color: #1a202c;
+}
+
+.leak-calc-btn.num:hover {
+    background: #e2e8f0;
+}
+
+.leak-calc-btn.op {
+    background: #ebf8ff;
+    color: #3182ce;
+}
+
+.leak-calc-btn.op:hover {
+    background: #bee3f8;
+}
+
+.leak-calc-btn.sci {
+    background: #f7fafc;
+    color: #718096;
+    font-size: 12px;
+}
+
+.leak-calc-btn.sci:hover {
+    background: #edf2f7;
+}
+
+.leak-calc-btn.clear {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+
+.leak-calc-btn.clear:hover {
+    background: #fed7d7;
+}
+
+.leak-calc-btn.equals {
+    background: #3182ce;
+    color: #ffffff;
+}
+
+.leak-calc-btn.equals:hover {
+    background: #2b6cb0;
+}

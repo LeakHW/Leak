@@ -42,6 +42,13 @@
                 category: 'Helpers',
                 description: 'Enable selection and copying on restricted elements.',
                 config: {}
+            },
+            {
+                id: 'scientific_calculator',
+                label: 'Calculator',
+                category: 'Helpers',
+                description: 'A full scientific calculator for complex math.',
+                config: {}
             }
         ],
         injection: {

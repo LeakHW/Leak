@@ -58,6 +58,13 @@
                 config: {}
             },
             {
+                id: 'scientific_calculator',
+                label: 'Calculator',
+                category: 'Helpers',
+                description: 'A full scientific calculator for complex math.',
+                config: {}
+            },
+            {
                 id: 'dev_info',
                 label: 'DOM Info (Debug)',
                 category: 'Debug',

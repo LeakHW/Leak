@@ -85,12 +85,17 @@
   - **Storage Management**: Button to clear all extension data.
 - **Branding & Logging**: Centralized logging system with styled `[LEAK]` prefix and a teal gradient ASCII logo on startup.
 - **Cross-Tab Sync**: Implemented a storage listener to keep tool states in sync across multiple browser tabs.
+- **Text Selector Tool**: A universal helper that forces elements to be selectable and enables copying on restricted sites (Sparx, Seneca).
 
 ### Changed
 
 - Reorganized settings into "Main" and "Optional Features" sections.
 - Improved selector robustness in `data_collector` and `bookwork_helper` to avoid noise and handle dynamic hashes.
 - Standardized tool registration to include categories (AI, Automation, Helpers, Debug).
+- **Answer Capture Overhaul**: Completely rewrote the capture logic in `bookwork_helper` and `data_collector` to be exhaustive. It now captures from inputs, multi-choice buttons, and drag-and-drop slots, with support for image-based answers.
+- **Logging Improvements**: Added "disabled" console messages for all tools and fixed asynchronous messaging errors in `background.js`.
+- **UI Refinements**: Hidden the sidebar when not in the Tools view and removed generic placeholder icons from tool buttons for a cleaner look.
+
 
 ### Fixed
 
@@ -99,4 +104,15 @@
 - Audited and standardized `z-index` across all UI overlays (Menu: 10M, Chatbot: 9.9M).
 - Fixed unstyled console messages by migrating all tools to `window.Leak.log/debug/warn/error`.
 - Polished Leak Menu layout: reduced sidebar width, optimized tool grid for better space utilization, and added bottom spacing for better UX.
-- Added **Text Selector** tool: A universal helper that forces elements to be selectable and enables copying on restricted sites.
+
+## [2026-05-01] - Scientific Calculator & Selection Tools
+
+**Model:** Gemini-3-Flash-Preview
+**AI:** Trae IDE
+
+### Added
+
+- **Scientific Calculator**: A draggable, fully functional scientific calculator with advanced math operations (trig, log, factorial, etc.) for complex homework.
+
+### Changed
+
