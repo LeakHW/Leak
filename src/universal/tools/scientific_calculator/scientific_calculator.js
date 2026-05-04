@@ -9,7 +9,20 @@
         let currentExpr = "0";
         let historyExpr = "";
         let lastAns = "0";
-        let isDeg = true; // Degrees vs Radians
+        let isDeg = true;
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        const onMouseMove = (e) => {
+            if (!isDragging || !container) return;
+            container.style.left = (e.clientX - offsetX) + 'px';
+            container.style.top = (e.clientY - offsetY) + 'px';
+            container.style.right = 'auto';
+        };
+
+        const onMouseUp = () => {
+            isDragging = false;
+        };
 
         const updateDisplay = () => {
             if (!container) return;
@@ -128,41 +141,32 @@
         };
 
         const createCalculator = async () => {
-            if (document.getElementById('leak-scientific-calculator')) return;
+            if (document.getElementById('leak-scientific-calculator')) {
+                container = document.getElementById('leak-scientific-calculator');
+                return;
+            }
 
-            container = document.createElement('div');
+            const temp = document.createElement('div');
             try {
                 const response = await fetch(chrome.runtime.getURL('universal/tools/scientific_calculator/scientific_calculator.html'));
                 const html = await response.text();
-                container.innerHTML = html;
-                container = container.firstElementChild;
+                temp.innerHTML = html;
+                container = temp.firstElementChild;
                 document.body.appendChild(container);
 
                 // Draggable logic
                 const header = container.querySelector('.leak-calc-header');
-                let isDragging = false;
-                let offsetX, offsetY;
-
                 header.onmousedown = (e) => {
                     isDragging = true;
                     offsetX = e.clientX - container.offsetLeft;
                     offsetY = e.clientY - container.offsetTop;
                 };
 
-                document.onmousemove = (e) => {
-                    if (!isDragging) return;
-                    container.style.left = (e.clientX - offsetX) + 'px';
-                    container.style.top = (e.clientY - offsetY) + 'px';
-                    container.style.right = 'auto';
-                };
-
-                document.onmouseup = () => {
-                    isDragging = false;
-                };
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
 
                 // Close logic
                 container.querySelector('.leak-calc-close').onclick = () => {
-                    const hostname = window.location.hostname;
                     window.Leak.toggleTool('scientific_calculator', false);
                 };
 
@@ -210,12 +214,25 @@
         window.Leak.registerTool('scientific_calculator', async (isEnabled) => {
             if (isEnabled) {
                 await createCalculator();
-                if (container) container.classList.add('active');
+                if (container) {
+                    container.classList.add('active');
+                    container.style.display = 'block';
+                }
                 window.Leak.log('Scientific Calculator enabled.');
             } else {
-                const el = document.getElementById('leak-scientific-calculator');
-                if (el) el.classList.remove('active');
-                window.Leak.debug('Scientific Calculator disabled.');
+                if (container) {
+                    container.classList.remove('active');
+                    setTimeout(() => {
+                        if (container && !container.classList.contains('active')) {
+                            container.remove();
+                            container = null;
+                        }
+                    }, 300);
+                }
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                window.Leak.log('Scientific Calculator disabled.');
             }
         });
     }

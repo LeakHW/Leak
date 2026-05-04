@@ -22,6 +22,29 @@
         let sessionData = {};
         let currentBookwork = null;
         let pendingSubmission = null;
+        let bookworkGui = null;
+
+        const updateGui = (code) => {
+            if (!bookworkGui) {
+                bookworkGui = document.createElement('div');
+                bookworkGui.className = 'leak-bookwork-gui hidden';
+                bookworkGui.innerHTML = `
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>Bookwork: <span class="code">None</span></span>
+                `;
+                document.body.appendChild(bookworkGui);
+            }
+
+            const codeEl = bookworkGui.querySelector('.code');
+            if (code) {
+                codeEl.textContent = code;
+                bookworkGui.classList.remove('hidden');
+            } else {
+                bookworkGui.classList.add('hidden');
+            }
+        };
 
         window.Leak.registerTool('bookwork_helper', (isEnabled) => {
             // Cleanup existing if any
@@ -33,19 +56,24 @@
                 document.body.removeEventListener('click', clickHandler, { capture: true });
                 clickHandler = null;
             }
+            if (bookworkGui) {
+                bookworkGui.remove();
+                bookworkGui = null;
+            }
 
             if (!isEnabled) {
-                window.Leak.debug('Bookwork Helper disabled.');
+                window.Leak.log('Bookwork Helper disabled.');
                 return;
             }
 
-            const clean = t => t.replace(/(Zoom|Watch video|Answer|Summary)/gi, "").replace(/\n{2,}/g, "\n").trim();
+            const clean = t => t.replace(/(Zoom|Watch video|Answer|Summary|Bookwork code:)/gi, "").replace(/\n{2,}/g, "\n").trim();
             // ... (rest of helper functions remain inside or outside)
             
             // Re-initialize state
             sessionData = {};
             currentBookwork = null;
             pendingSubmission = null;
+            updateGui(null);
 
             const getQuestionData = () => {
                 const bodyText = document.body.innerText;
@@ -202,10 +230,23 @@
             observer = new MutationObserver(() => {
                 // Check for new bookwork
                 const qData = getQuestionData();
-                if (qData && qData.bookwork !== currentBookwork) {
-                    currentBookwork = qData.bookwork;
-                    window.Leak.log(`New bookwork detected: ${currentBookwork}`);
-                    pendingSubmission = null;
+                if (qData) {
+                    if (qData.bookwork !== currentBookwork) {
+                        // Bookwork changed!
+                        if (pendingSubmission && currentBookwork) {
+                            window.Leak.log(`Bookwork changed from ${currentBookwork} to ${qData.bookwork}. Assuming previous answer was CORRECT.`);
+                            handleCorrectAnswer(pendingSubmission);
+                        }
+                        
+                        currentBookwork = qData.bookwork;
+                        window.Leak.log(`New bookwork detected: ${currentBookwork}`);
+                        updateGui(currentBookwork);
+                        pendingSubmission = null;
+                    }
+                } else if (currentBookwork) {
+                    // No bookwork found but we had one
+                    currentBookwork = null;
+                    updateGui(null);
                 }
 
                 // Check for result popovers
@@ -232,7 +273,7 @@
                 if (submitBtn && submitBtn.textContent.toLowerCase().includes('submit')) {
                     pendingSubmission = captureAnswer();
                     if (pendingSubmission) {
-                        window.Leak.log('Answer captured, waiting for validation...', pendingSubmission.answer);
+                        window.Leak.log('Answer captured, waiting for validation (popover or transition)...', pendingSubmission.answer);
                     } else {
                         window.Leak.warn('Submit clicked but no answer could be captured.');
                     }
@@ -247,6 +288,7 @@
             if (initialData) {
                 currentBookwork = initialData.bookwork;
                 window.Leak.log(`Active. Monitoring [${currentBookwork}]`);
+                updateGui(currentBookwork);
             } else {
                 window.Leak.log('Active. Waiting for bookwork code...');
             }

@@ -1,3 +1,15 @@
+/////////////////////////////////////////////
+// THIS CODE IS PART OF THE LEAKHW PROJECT //
+//    © LeakHW 2026 - GNU GPLv3 License    //
+//                                         //
+// Please do NOT claim this code as solely //
+// your own code. All code here is part of //
+//     the open-source LeakHW project.     //
+//                                         //
+//    logcdn.js.txt • CDN Asset Logger     //
+//        Logs image asset URLs            //
+/////////////////////////////////////////////
+
 // tbc
 // logs cdn for a optional project that collects all the urls of hw image assets for various purposes
 

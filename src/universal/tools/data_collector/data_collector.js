@@ -38,7 +38,7 @@
             }
 
             if (!isEnabled) {
-                window.Leak.debug('Data Collector disabled.');
+                window.Leak.log('Data Collector disabled.');
                 return;
             }
 
@@ -84,13 +84,13 @@
                         if (result['leak_setting_collect_data_verbose']) {
                             window.Leak.log('Detailed Log', data);
                         } else {
-                            window.Leak.log('Captured Question Data', { bookwork: book, hasAnswer: !!capturedAnswer });
+                            window.Leak.log('Captured Question Data', { bookwork: book, hasAnswer: !!capturedAnswer, answer: capturedAnswer });
                         }
                     }
                 });
             };
 
-            // Capture logic for data collector (similar to bookwork helper)
+            // Capture logic for data collector (refined based on examples)
             const captureCurrentAnswer = () => {
                 const parts = {
                     inputs: [],
@@ -141,6 +141,7 @@
                     }
                 });
 
+                // Combine and remove duplicates
                 return [...new Set([...parts.inputs, ...parts.options, ...parts.slots])].filter(v => v && v.length > 0).join(', ');
             };
 
@@ -150,8 +151,15 @@
                 const bookwork = bookMatch ? bookMatch[1] : null;
 
                 if (bookwork && bookwork !== lastLog) {
+                    // Bookwork changed!
+                    if (pendingAnswer && lastLog) {
+                        window.Leak.log(`Transition detected (${lastLog} -> ${bookwork}). Logging previous answer.`);
+                        logData(pendingAnswer);
+                    }
+                    
                     lastLog = bookwork;
                     logData();
+                    pendingAnswer = null;
                 }
 
                 const isCorrect = document.querySelector('[class*="_Correct_"]');

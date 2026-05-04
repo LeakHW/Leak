@@ -178,11 +178,9 @@
             const update = {};
             update[storageKey] = state;
             
-            chrome.storage.local.set(update, () => {
-                if (tools[id]) {
-                    tools[id](state);
-                }
-            });
+            // We only set storage; the onChanged listener handles the actual toggling
+            // to ensure consistency between manual toggles and cross-tab sync.
+            chrome.storage.local.set(update);
         },
 
         /**

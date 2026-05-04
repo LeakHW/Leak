@@ -152,13 +152,27 @@
 
     // Global function to toggle chatbot
     window.toggleLeakChatbot = async (enable) => {
+        const container = document.getElementById('leak-ai-chatbot-container');
         if (enable) {
-            await createChatbot(currentConfig);
-            const container = document.getElementById('leak-ai-chatbot-container');
-            if (container) container.classList.add('active');
+            if (!container) {
+                await createChatbot(currentConfig);
+            }
+            const newContainer = document.getElementById('leak-ai-chatbot-container');
+            if (newContainer) {
+                newContainer.style.display = 'flex';
+                setTimeout(() => newContainer.classList.add('active'), 10);
+            }
+            window.Leak.log('AI Chatbot enabled.');
         } else {
-            const container = document.getElementById('leak-ai-chatbot-container');
-            if (container) container.classList.remove('active');
+            if (container) {
+                container.classList.remove('active');
+                setTimeout(() => {
+                    if (container && !container.classList.contains('active')) {
+                        container.remove();
+                    }
+                }, 300);
+            }
+            window.Leak.log('AI Chatbot disabled.');
         }
     };
 

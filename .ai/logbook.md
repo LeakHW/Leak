@@ -97,13 +97,6 @@
 - **CSP Fix**: Replaced `eval()` in the Scientific Calculator with a custom recursive descent math parser to comply with strict Content Security Policies on platforms like Sparx.
 - **UI Refinements**: Hidden the sidebar when not in the Tools view and removed generic placeholder icons from tool buttons for a cleaner look.
 
-- **UI Profiles System**: Introduced a new system for platform-wide themes and UI customizations.
-  - Renamed `tool-config.js` to `config.js` across all platforms.
-  - Added a 'Profiles' tab to the Leak Menu for easy theme switching.
-  - Created an example 'Blue Background' profile for Sparx Maths.
-  - Centralized profile injection logic in `universal/tools.js`.
-- **Developer Documentation**: Restructured the documentation into a GitHub Wiki format within the `docs/` folder, featuring a Home page, dedicated guides for UI Profiles, Universal Tools, and Platform Setup, and a custom Sidebar and shared Footer.
-
 ### Fixed
 
 - Fixed `ReferenceError` in `leak_menu.js` causing crashes when opening settings.
@@ -111,6 +104,40 @@
 - Audited and standardized `z-index` across all UI overlays (Menu: 10M, Chatbot: 9.9M).
 - Fixed unstyled console messages by migrating all tools to `window.Leak.log/debug/warn/error`.
 - Polished Leak Menu layout: reduced sidebar width, optimized tool grid for better space utilization, and added bottom spacing for better UX.
+
+## [2026-05-02] - Sparx Maths: Answer Capture & Bookwork GUI
+
+**Model:** Gemini-3-Flash-Preview
+**AI:** Trae IDE
+
+### Added
+
+- **Bookwork GUI**: A top-left fixed overlay that displays the current Sparx Maths bookwork code for easy reference.
+- **Bookwork Helper CSS**: New stylesheet for the bookwork GUI.
+- **Transition-Based Validation**: Logic to detect correct answers by monitoring bookwork code changes after submission.
+
+### Changed
+
+- **Answer Capture Refinement**: Improved `captureAnswer` logic in `bookwork_helper.js` and `data_collector.js` to support:
+  - Multiple choice options with images.
+  - Drag-and-drop slots (Inline and Card slots).
+  - Refined text and numeric input detection.
+- **Data Collector Logging**: Now includes the captured answer in the console logs for better debugging and data gathering.
+- **Manifest Update**: Added `bookwork_helper.css` to universal content scripts.
+
+### Fixed
+
+- Fixed an issue where "Bookwork code:" text was sometimes included in the cleaned question text.
+- **Tool Disabling Fix**: Resolved an issue where tools would not clean up properly when disabled.
+  - Tools now explicitly remove their DOM elements instead of just hiding them.
+  - Fixed redundant tool toggling by centralizing state changes in the storage listener.
+  - Standardized "disabled" console messages to use `window.Leak.log` instead of `debug`.
+  - Prevented multiple instances of tools (like the calculator) from spawning.
+  - Fixed draggable event listeners in the scientific calculator not being removed on disable.
+
+### Added
+
+- **Copyright Audit**: Added the official LeakHW copyright notice to all source files that were missing it, including JS, CSS, and HTML templates.
 
 ## [2026-05-01] - Scientific Calculator & Selection Tools
 
@@ -120,5 +147,12 @@
 ### Added
 
 - **Scientific Calculator**: A draggable, fully functional scientific calculator with advanced math operations (trig, log, factorial, etc.) for complex homework.
+- **UI Profiles System**: Introduced a new system for platform-wide themes and UI customizations.
+  - Added a 'Profiles' tab to the Leak Menu for easy theme switching.
+  - Created an example 'Blue Background' profile for Sparx Maths.
+  - Centralized profile injection logic in `universal/tools.js`.
 
 ### Changed
+
+- Renamed `tool-config.js` to `config.js` across all platforms.
+- **Developer Documentation**: Restructured the documentation into a GitHub Wiki format within the `docs/` folder, featuring a Home page, dedicated guides for UI Profiles, Universal Tools, and Platform Setup, and a custom Sidebar and shared Footer.
